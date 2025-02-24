@@ -38,9 +38,17 @@ public class CalculatorService {
     int i = 0;
     while (i< expression.length()) {
       char c = expression.charAt(i);
-      if (Character.isDigit(c)|| c == '.') {
-        StringBuilder sb = new StringBuilder();
-        while ((i < expression.length()) && (Character.isDigit(expression.charAt(i)) || expression.charAt(i) == '.')) {
+      StringBuilder sb = new StringBuilder();
+
+      if (Character.isDigit(c)|| c == '.'|| (c == '-' && i == 0)) {
+        while (i < expression.length()
+                && (Character.isDigit(expression.charAt(i))
+                || expression.charAt(i) == '.'
+                || (expression.charAt(i) == '-' && i == 0))) {
+          if (expression.charAt(0) == '-' && i == 0) {
+            sb.append('-');
+            i++;
+          }
           sb.append(expression.charAt(i));
           i++;
         }
