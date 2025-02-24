@@ -1,22 +1,36 @@
 package ntnu.idi.project4.service;
 
+
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Service
 public class CalculatorService {
 
   public double calculate(String expression) {
+
     List<String> tokens = tokenize(expression);
-    double result = Double.parseDouble(tokens.getFirst());
-    for (int i = 1; i < tokens.size(); i += 2) {
-      String operator = tokens.get(i);
-      double operand = Double.parseDouble(tokens.get(i + 1));
-      result = calc(result, operand, operator);
+    while (tokens.size() >= 3){
+      // Multiplication and division have higher precedence than addition and subtraction
+      if ((tokens.size() > 3) &&(tokens.get(1).equals("+") || tokens.get(1).equals("-")) && (tokens.get(3).equals("*") || tokens.get(3).equals("/"))) {
+        double result = calc(Double.parseDouble(tokens.get(2)), Double.parseDouble(tokens.get(4)), tokens.get(3));
+        tokens.remove(2);
+        tokens.remove(2);
+        tokens.remove(2);
+        tokens.add(2, String.valueOf(result));
+
+      } else {
+        double result = calc(Double.parseDouble(tokens.get(0)), Double.parseDouble(tokens.get(2)), tokens.get(1));
+        tokens.remove(0);
+        tokens.remove(0);
+        tokens.remove(0);
+        tokens.add(0,String.valueOf(result));
+      }
     }
-    return result;
+    return Double.parseDouble(tokens.get(0));
   }
 
   private List<String> tokenize(String expression) {
@@ -31,7 +45,7 @@ public class CalculatorService {
           i++;
         }
         tokens.add(sb.toString());
-      }else if (c == '+' || c == '-' || c == 'x' || c == '/') {
+      }else if (c == '+' || c == '-' || c == '*' || c == '/') {
         tokens.add(String.valueOf(c));
         i++;
       } else if (Character.isWhitespace(c)) {
@@ -43,6 +57,7 @@ public class CalculatorService {
     return tokens;
   }
 
+
   /**
    * Calculate a result from two numbers with an operator
    */
@@ -53,7 +68,7 @@ public class CalculatorService {
       return a + b;
     } else if (operator.equals("-")) {
       return a - b;
-    } else if (operator.equals("x")) {
+    } else if (operator.equals("*")) {
       return a * b;
     } else if (operator.equals("/")) {
       return a / b;
