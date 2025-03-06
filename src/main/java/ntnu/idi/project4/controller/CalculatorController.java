@@ -27,9 +27,12 @@ public class CalculatorController {
 
   @PostMapping("/calc")
   public ResponseEntity<CalculationResponse> calc(@RequestBody CalculationRequest request) {
+
+
     logger.info("Received calculation request: " + request.getExpression());
     double result = calculatorService.calculate(request.getExpression());
     CalculationResponse response = new CalculationResponse(result);
+    logger.info("Returning calculation response: " + response.getResult());
     return ResponseEntity.ok(response);
   }
 

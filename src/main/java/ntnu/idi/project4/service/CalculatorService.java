@@ -1,6 +1,8 @@
 package ntnu.idi.project4.service;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -10,13 +12,21 @@ import java.util.List;
 @Service
 public class CalculatorService {
 
-  public double calculate(String expression) {
+  Logger logger = LoggerFactory.getLogger(CalculatorService.class);
 
+  public double calculate(String expression) {
+    logger.info("Calculating expression: {} ", expression);
     List<String> tokens = tokenize(expression);
+    logger.debug("Tokenized expression: {} ", tokens);
+
     while (tokens.size() >= 3){
       // Multiplication and division have higher precedence than addition and subtraction
-      if ((tokens.size() > 3) &&(tokens.get(1).equals("+") || tokens.get(1).equals("-")) && (tokens.get(3).equals("*") || tokens.get(3).equals("/"))) {
+      if ((tokens.size() > 3)
+              && (tokens.get(1).equals("+") || tokens.get(1).equals("-"))
+              && (tokens.get(3).equals("*") || tokens.get(3).equals("/"))) {
         double result = calc(Double.parseDouble(tokens.get(2)), Double.parseDouble(tokens.get(4)), tokens.get(3));
+        logger.debug("Calculated expression with higher precedence: {} {} {} = {}",
+                tokens.get(2), tokens.get(3), tokens.get(4), result);
         tokens.remove(2);
         tokens.remove(2);
         tokens.remove(2);
@@ -24,13 +34,17 @@ public class CalculatorService {
 
       } else {
         double result = calc(Double.parseDouble(tokens.get(0)), Double.parseDouble(tokens.get(2)), tokens.get(1));
+        logger.debug("Calculated expression: {} {} {} = {}",
+                tokens.get(0), tokens.get(1), tokens.get(2), result);
         tokens.remove(0);
         tokens.remove(0);
         tokens.remove(0);
         tokens.add(0,String.valueOf(result));
       }
     }
-    return Double.parseDouble(tokens.get(0));
+    double finalResult = Double.parseDouble(tokens.get(0));
+    logger.info("Final result: {} ", finalResult);
+    return finalResult;
   }
 
   private List<String> tokenize(String expression) {
@@ -59,6 +73,7 @@ public class CalculatorService {
       } else if (Character.isWhitespace(c)) {
         i++;
       } else {
+        logger.error("Invalid character: {}", c);
         throw new IllegalArgumentException("Invalid character: " + c);
       }
     }
@@ -71,6 +86,7 @@ public class CalculatorService {
    */
   public double calc(double a, double b, String operator){
     if (operator == null) {
+      logger.error("Operator cannot be null");
       throw new IllegalArgumentException("Operator cannot be null");
     } else if (operator.equals("+")) {
       return a + b;
@@ -79,8 +95,12 @@ public class CalculatorService {
     } else if (operator.equals("*")) {
       return a * b;
     } else if (operator.equals("/")) {
+      if (b == 0) {
+        logger.error("Division by zero");
+      }
       return a / b;
     } else {
+      logger.error("Operator not supported: {}", operator);
       throw new IllegalArgumentException("Operator not supported");
     }
   }
