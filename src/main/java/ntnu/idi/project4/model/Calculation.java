@@ -2,62 +2,51 @@ package ntnu.idi.project4.model;
 
 //TODO: Change class to right data
 public class Calculation {
-  private long id;
-  private String title;
-  private String description;
-  private boolean published;
+  private int id;
+  private int userId;
+  private String expression;
+  private String result;
 
   public Calculation() {
-
   }
 
-  public Calculation(String title, String description, boolean published) {
-    this.title = title;
-    this.description = description;
-    this.published = published;
-  }
-
-  public Calculation(long id, String title, String description, boolean published) {
+  public Calculation(int id, int userId, String expression, String result) {
     this.id = id;
-    this.title = title;
-    this.description = description;
-    this.published = published;
-  }
-  public void setId(long id) {
-    this.id = id;
+    this.userId = userId;
+    this.expression = expression;
+    this.result = result;
   }
 
-  public long getId() {
+  public int getId() {
     return id;
   }
 
-  public String getTitle() {
-    return title;
+  public int getUserId() {
+    return userId;
   }
 
-  public void setTitle(String title) {
-    this.title = title;
+  public String getExpression() {
+    return expression;
   }
 
-  public String getDescription() {
-    return description;
+  public String getResult() {
+    return result;
   }
 
-  public void setDescription(String description) {
-    this.description = description;
+  public void setId(int id) {
+    this.id = id;
   }
 
-  public boolean isPublished() {
-    return published;
+  public void setUserId(int userId) {
+    this.userId = userId;
   }
 
-  public void setPublished(boolean isPublished) {
-    this.published = isPublished;
+  public void setExpression(String expression) {
+    this.expression = expression;
   }
 
-  @Override
-  public String toString() {
-    return "Tutorial [id=" + id + ", title=" + title + ", desc=" + description + ", published=" + published + "]";
+  public void setResult(String result) {
+    this.result = result;
   }
 }
 
