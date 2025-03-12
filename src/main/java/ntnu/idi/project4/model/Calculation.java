@@ -1,20 +1,25 @@
 package ntnu.idi.project4.model;
 
+import java.sql.Time;
+import java.sql.Timestamp;
+
 //TODO: Change class to right data
 public class Calculation {
   private int id;
   private int userId;
   private String expression;
-  private String result;
+  private double result;
+  private Timestamp timestamp;
 
   public Calculation() {
   }
 
-  public Calculation(int id, int userId, String expression, String result) {
+  public Calculation(int id, int userId, String expression, double result, Timestamp timestamp) {
     this.id = id;
     this.userId = userId;
     this.expression = expression;
     this.result = result;
+    this.timestamp = timestamp;
   }
 
   public int getId() {
@@ -29,8 +34,12 @@ public class Calculation {
     return expression;
   }
 
-  public String getResult() {
+  public double getResult() {
     return result;
+  }
+
+  public Timestamp getTimestamp() {
+    return timestamp;
   }
 
   public void setId(int id) {
@@ -45,8 +54,12 @@ public class Calculation {
     this.expression = expression;
   }
 
-  public void setResult(String result) {
+  public void setResult(double result) {
     this.result = result;
+  }
+
+  public void setTimestamp(Timestamp timestamp) {
+    this.timestamp = timestamp;
   }
 }
 
