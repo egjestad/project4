@@ -1,6 +1,10 @@
 package ntnu.idi.project4.service;
 
 
+import ntnu.idi.project4.dto.CalculationRequest;
+import ntnu.idi.project4.dto.CalculationResponse;
+import ntnu.idi.project4.model.Calculation;
+import ntnu.idi.project4.repo.CalculationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -13,6 +17,29 @@ import java.util.List;
 public class CalculatorService {
 
   Logger logger = LoggerFactory.getLogger(CalculatorService.class);
+
+  private final CalculationRepository calculationRepository;
+
+  public CalculatorService(CalculationRepository calculationRepository) {
+    this.calculationRepository = calculationRepository;
+  }
+  public void saveCalculation(int userId, String expression, double result) {
+    Calculation calculation = new Calculation();
+    calculation.setUserId(userId);
+    calculation.setExpression(expression);
+    calculation.setResult(result);
+    calculationRepository.save(calculation);
+  }
+
+  public List<Calculation> getRecentCalculations(int userId) {
+    return calculationRepository.findTenMostRecentCalculations(userId);
+  }
+
+  public CalculationResponse calculateAndSave(CalculationRequest request) {
+    double result = calculate(request.getExpression());
+    saveCalculation(request.getUserId(), request.getExpression(), result);
+    return new CalculationResponse(result);
+  }
 
   public double calculate(String expression) {
     logger.info("Calculating expression: {} ", expression);
