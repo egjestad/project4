@@ -23,6 +23,7 @@ public class UserController {
     this.userService = userService;
   }
 
+  //todo: move to service
   @PostMapping("/register")
   public UserResponse registerUser(UserRequest userRequest) {
     logger.info("received register request");

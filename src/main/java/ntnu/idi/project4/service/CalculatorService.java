@@ -29,6 +29,7 @@ public class CalculatorService {
     calculation.setExpression(expression);
     calculation.setResult(result);
     calculationRepository.save(calculation);
+    logger.info("Saved calculation: {} ", calculation);
   }
 
   public List<Calculation> getRecentCalculations(int userId) {
