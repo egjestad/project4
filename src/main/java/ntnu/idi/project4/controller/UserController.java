@@ -1,6 +1,8 @@
 package ntnu.idi.project4.controller;
 
 
+import ntnu.idi.project4.dto.UserRequest;
+import ntnu.idi.project4.dto.UserResponse;
 import ntnu.idi.project4.model.User;
 import ntnu.idi.project4.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,32 +24,39 @@ public class UserController {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<String> registerUser(@RequestParam String username, @RequestParam String password) {
-    Optional<User> existingUser = userService.findUserByUsername(username);
+  public void registerUser(@RequestBody UserRequest userRequest) {
+    Optional<User> existingUser = userService.findUserByUsername(userRequest.getUsername());
     if (existingUser.isPresent()) {
       logger.info("User already exists");
-      return ResponseEntity.badRequest().body("User already exists");
     }
-    userService.registerUser(username, password);
-    logger.info("User registered");
-    return ResponseEntity.ok("User registered");
+    userService.registerUser(userRequest.getUsername(), userRequest.getPassword());
+    logger.info("User registered, logging in");
+    loginUser(userRequest);
   }
 
   @PostMapping("/login")
-  public ResponseEntity<String> loginUser(@RequestParam String username, @RequestParam String password) {
-    Optional<User> user = userService.findUserByUsername(username);
-    if (user.isPresent() && user.get().getPassword().equals(password)) {
+  public ResponseEntity<?> loginUser(@RequestBody UserRequest userRequest) {
+    Optional<User> user = userService.findUserByUsername(userRequest.getUsername());
+    if (user.isPresent() && user.get().getPassword().equals(userRequest.getPassword())) {
       logger.info("User logged in");
-      return ResponseEntity.ok("User logged in");
+      UserResponse userResponse = new UserResponse(user.get().getId(), user.get().getUsername());
+      return ResponseEntity.ok(userResponse);
+    } else if (!user.isEmpty()) {
+      logger.info("User not found, registering user");
+      registerUser(userRequest);
     }
     logger.info("Username or password incorrect");
     return ResponseEntity.status(401).body("Username or password incorrect");
   }
 
   @GetMapping("/user/{id}")
-  public ResponseEntity<User> getUserById(@PathVariable int id) {
+  public ResponseEntity<UserResponse> getUserById(@PathVariable int id) {
     Optional<User> user = userService.findUserById(id);
-    return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    if (user.isPresent()) {
+      UserResponse userResponse = new UserResponse(user.get().getId(), user.get().getUsername());
+      return ResponseEntity.ok(userResponse);
+    }
+    return ResponseEntity.notFound().build();
   }
 
   @DeleteMapping("/user/{id}")

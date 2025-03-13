@@ -1,8 +1,8 @@
 package ntnu.idi.project4.dto;
 
 public class UserResponse {
-  private String username;
   private int userId;
+  private String username;
 
   public UserResponse() {
   }
@@ -11,7 +11,7 @@ public class UserResponse {
     this.username = username;
   }
 
-  public UserResponse(String username, int userId) {
+  public UserResponse(int userId, String username) {
     this.username = username;
     this.userId = userId;
   }
