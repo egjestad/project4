@@ -25,10 +25,14 @@ public class CalculatorController {
     this.calculatorService = calculatorService;
   }
 
+  /**
+   * REST endpoint for calculating an expression.
+   *
+   * @param request the calculation request
+   * @return the calculation response
+   */
   @PostMapping("/calc")
   public ResponseEntity<CalculationResponse> calc(@RequestBody CalculationRequest request) {
-
-
     logger.info("Received calculation request: " + request.getExpression());
     double result = calculatorService.calculate(request.getExpression());
     CalculationResponse response = new CalculationResponse(result);

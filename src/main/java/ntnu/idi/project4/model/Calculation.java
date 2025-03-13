@@ -1,9 +1,9 @@
 package ntnu.idi.project4.model;
 
-import java.sql.Time;
+
 import java.sql.Timestamp;
 
-//TODO: Change class to right data
+
 public class Calculation {
   private int id;
   private int userId;
