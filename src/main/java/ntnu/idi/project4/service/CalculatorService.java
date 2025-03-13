@@ -35,6 +35,10 @@ public class CalculatorService {
     return calculationRepository.findTenMostRecentCalculations(userId);
   }
 
+  public List<Calculation> getRecentCalculations(int userId, int limit) {
+    return calculationRepository.findRecentCalculations(userId, limit);
+  }
+
   public CalculationResponse calculateAndSave(CalculationRequest request) {
     double result = calculate(request.getExpression());
     saveCalculation(request.getUserId(), request.getExpression(), result);
