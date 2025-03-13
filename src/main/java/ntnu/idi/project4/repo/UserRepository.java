@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 public class UserRepository {
 
   private final JdbcTemplate jdbcTemplate;
+  private final String TABLE_NAME = "users";
 
   private final RowMapper<User> userRowMapper = (rs, rowNum) -> {
     User user = new User();
@@ -34,7 +35,7 @@ public class UserRepository {
    * @param user the User to save
    */
   public void save(User user) {
-    String sql = "INSERT INTO User (username, password) VALUES (?, ?)";
+    String sql = "INSERT INTO " + TABLE_NAME + " (username, password) VALUES (?, ?)";
     jdbcTemplate.update(sql, user.getUsername(), user.getPassword());
   }
 
@@ -45,7 +46,7 @@ public class UserRepository {
    * @return the User with the given username
    */
   public User findByUsername(String username) {
-    String sql = "SELECT * FROM User WHERE username = ?";
+    String sql = "SELECT * FROM " + TABLE_NAME + "WHERE username = ?";
     return jdbcTemplate.queryForObject(sql, userRowMapper, username);
   }
 
@@ -56,7 +57,7 @@ public class UserRepository {
    * @return the User with the given ID
    */
   public User findById(int id) {
-    String sql = "SELECT * FROM User WHERE id = ?";
+    String sql = "SELECT * FROM " + TABLE_NAME + " WHERE id = ?";
     return jdbcTemplate.queryForObject(sql, userRowMapper, id);
   }
 
@@ -66,7 +67,7 @@ public class UserRepository {
    * @param id the ID of the User to delete
    */
   public void deleteById(int id) {
-    String sql = "DELETE FROM User WHERE id = ?";
+    String sql = "DELETE FROM " + TABLE_NAME + " WHERE id = ?";
     jdbcTemplate.update(sql, id);
   }
 
@@ -76,7 +77,7 @@ public class UserRepository {
    * @param username the username of the User to delete
    */
   public void deleteByUsername(String username) {
-    String sql = "DELETE FROM User WHERE username = ?";
+    String sql = "DELETE FROM " + TABLE_NAME + " WHERE username = ?";
     jdbcTemplate.update(sql, username);
   }
 
@@ -87,7 +88,7 @@ public class UserRepository {
    * @param username the new username
    */
   public void updateUsername(int id, String username) {
-    String sql = "UPDATE User SET username = ? WHERE id = ?";
+    String sql = "UPDATE " + TABLE_NAME + " SET username = ? WHERE id = ?";
     jdbcTemplate.update(sql, username, id);
   }
 
@@ -98,7 +99,7 @@ public class UserRepository {
    * @param password the new password
    */
   public void updatePassword(int id, String password) {
-    String sql = "UPDATE User SET password = ? WHERE id = ?";
+    String sql = "UPDATE " + TABLE_NAME + " SET password = ? WHERE id = ?";
     jdbcTemplate.update(sql, password, id);
   }
 }
