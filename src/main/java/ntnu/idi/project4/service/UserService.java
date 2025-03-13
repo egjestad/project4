@@ -2,7 +2,9 @@ package ntnu.idi.project4.service;
 
 import ntnu.idi.project4.model.User;
 import ntnu.idi.project4.repo.UserRepository;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
 
 import java.util.Optional;
 
@@ -10,6 +12,8 @@ import java.util.Optional;
 public class UserService {
 
   private final UserRepository userRepository;
+
+  private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
   public UserService(UserRepository userRepository) {
     this.userRepository = userRepository;

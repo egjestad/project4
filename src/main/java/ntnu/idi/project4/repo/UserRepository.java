@@ -1,6 +1,7 @@
 package ntnu.idi.project4.repo;
 
 import ntnu.idi.project4.model.User;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -46,8 +47,12 @@ public class UserRepository {
    * @return the User with the given username
    */
   public User findByUsername(String username) {
-    String sql = "SELECT * FROM " + TABLE_NAME + "WHERE username = ?";
-    return jdbcTemplate.queryForObject(sql, userRowMapper, username);
+    String sql = "SELECT * FROM " + TABLE_NAME + " WHERE username = ?";
+    try {
+      return jdbcTemplate.queryForObject(sql, userRowMapper, username);
+    } catch (DataAccessException e) {
+      return null;
+    }
   }
 
   /**

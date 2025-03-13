@@ -24,26 +24,31 @@ public class UserController {
   }
 
   @PostMapping("/register")
-  public void registerUser(@RequestBody UserRequest userRequest) {
+  public UserResponse registerUser(UserRequest userRequest) {
+    logger.info("received register request");
     Optional<User> existingUser = userService.findUserByUsername(userRequest.getUsername());
     if (existingUser.isPresent()) {
       logger.info("User already exists");
     }
     userService.registerUser(userRequest.getUsername(), userRequest.getPassword());
     logger.info("User registered, logging in");
-    loginUser(userRequest);
+    Optional<User> user = userService.findUserByUsername(userRequest.getUsername());
+    return new UserResponse(user.get().getId(), user.get().getUsername());
   }
 
   @PostMapping("/login")
   public ResponseEntity<?> loginUser(@RequestBody UserRequest userRequest) {
+    logger.info("received login request");
     Optional<User> user = userService.findUserByUsername(userRequest.getUsername());
-    if (user.isPresent() && user.get().getPassword().equals(userRequest.getPassword())) {
+    logger.info("User found: " + user);
+    if (!user.isEmpty() && user.get().getPassword().equals(userRequest.getPassword())) {
       logger.info("User logged in");
       UserResponse userResponse = new UserResponse(user.get().getId(), user.get().getUsername());
       return ResponseEntity.ok(userResponse);
-    } else if (!user.isEmpty()) {
+    } else if (user.isEmpty()) {
       logger.info("User not found, registering user");
-      registerUser(userRequest);
+      UserResponse registeredResponse = registerUser(userRequest);
+      return ResponseEntity.ok(registeredResponse);
     }
     logger.info("Username or password incorrect");
     return ResponseEntity.status(401).body("Username or password incorrect");
