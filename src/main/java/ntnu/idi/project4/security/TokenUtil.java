@@ -9,11 +9,13 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.logging.Logger;
 
 @Component
 public class TokenUtil {
   private final String SECRET_KEY = "yourSecretKeyHereYourSecretKeyHere";
   private final Duration TOKEN_VALIDITY = Duration.ofMinutes(5);
+  private final Logger logger = Logger.getLogger(TokenUtil.class.getName());
 
   public String generateToken(int userId) {
     final Instant now = Instant.now();
@@ -30,14 +32,31 @@ public class TokenUtil {
   public String getSECRET_KEY() {
     return SECRET_KEY;
   }
+
   public String verifyToken(String token) {
     try {
       final Algorithm hmac512 = Algorithm.HMAC512(SECRET_KEY);
       final JWTVerifier verifier = JWT.require(hmac512).build();
       DecodedJWT decodedJWT = verifier.verify(token);
-      return decodedJWT.getSubject(); // Return username if valid
+      return decodedJWT.getSubject(); // Return userId if valid
     } catch (JWTVerificationException e) {
       return null; // Return null if invalid
+    }
+  }
+
+  public int extractUserId(String token) {
+    try {
+      token = token.replace("Bearer ", "");
+      logger.info("Extracting userId from token: " + token);
+      String userIdStr = verifyToken(token);
+      if (userIdStr != null) {
+        logger.info("Extracted userId: " + userIdStr);
+        return Integer.parseInt(userIdStr);
+      } else {
+        return -1;
+      }
+    } catch (NumberFormatException e) {
+      throw new NumberFormatException("Invalid userId in token");
     }
   }
 }

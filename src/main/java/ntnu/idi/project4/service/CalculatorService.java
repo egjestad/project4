@@ -40,9 +40,9 @@ public class CalculatorService {
     return calculationRepository.findRecentCalculations(userId, limit);
   }
 
-  public CalculationResponse calculateAndSave(CalculationRequest request) {
-    double result = calculate(request.getExpression());
-    saveCalculation(request.getUserId(), request.getExpression(), result);
+  public CalculationResponse calculateAndSave(int userId, String expression) {
+    double result = calculate(expression);
+    saveCalculation(userId, expression, result);
     return new CalculationResponse(result);
   }
 
