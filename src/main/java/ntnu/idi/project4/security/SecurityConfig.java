@@ -16,26 +16,14 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+  @Autowired
+  private TokenUtil tokenUtil;
 
-/*
-  @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.disable())
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/token", "/register", "/login").permitAll()
-                    .anyRequest().authenticated())
-            .addFilterBefore(new JWTAuthFilter(tokenUtil), UsernamePasswordAuthenticationFilter.class);
+  public SecurityConfig(TokenUtil tokenUtil) {
+    this.tokenUtil = tokenUtil;
+  }
 
-    http.cors(cors -> cors.configurationSource(request -> {
-      CorsConfiguration config = new CorsConfiguration();
-      config.setAllowedOrigins(List.of("http://localhost:5173"));
-      config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
-      config.setAllowedHeaders(List.of("*"));
-      return config;
-    }));
 
- */
 @Bean
 public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
   http.csrf(csrf -> csrf.disable())
