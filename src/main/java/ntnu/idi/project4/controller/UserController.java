@@ -1,11 +1,16 @@
 package ntnu.idi.project4.controller;
 
 
+import ntnu.idi.project4.dto.LoginResponse;
 import ntnu.idi.project4.dto.UserRequest;
 import ntnu.idi.project4.dto.UserResponse;
+import ntnu.idi.project4.exeptions.InncorectPasswordExeption;
+import ntnu.idi.project4.exeptions.UserNotFoundExeption;
 import ntnu.idi.project4.model.User;
+import ntnu.idi.project4.security.TokenUtil;
 import ntnu.idi.project4.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import java.util.Optional;
@@ -17,6 +22,7 @@ import java.util.logging.Logger;
 public class UserController {
   private final UserService userService;
   private final Logger logger = Logger.getLogger(UserController.class.getName());
+  private final TokenUtil tokenUtil = new TokenUtil();
 
   @Autowired
   public UserController(UserService userService) {
@@ -39,20 +45,27 @@ public class UserController {
 
   @PostMapping("/login")
   public ResponseEntity<?> loginUser(@RequestBody UserRequest userRequest) {
-    logger.info("received login request");
-    Optional<User> user = userService.findUserByUsername(userRequest.getUsername());
-    logger.info("User found: " + user);
-    if (!user.isEmpty() && user.get().getPassword().equals(userRequest.getPassword())) {
-      logger.info("User logged in");
-      UserResponse userResponse = new UserResponse(user.get().getId(), user.get().getUsername());
-      return ResponseEntity.ok(userResponse);
-    } else if (user.isEmpty()) {
-      logger.info("User not found, registering user");
-      UserResponse registeredResponse = registerUser(userRequest);
-      return ResponseEntity.ok(registeredResponse);
+    logger.info("Received login request");
+    String token = null;
+    try {
+      token = userService.authenticateUser(userRequest.getUsername(), userRequest.getPassword());
+      if (token != null) {
+        logger.info("User authenticated, returning token: " + token);
+        return ResponseEntity.ok().body(new LoginResponse(token));
+      } else {
+        logger.info("Token is null");
+      }
+    } catch (UserNotFoundExeption e) {
+      logger.info("User not found");
+      //registerUser(userRequest);
+    } catch (InncorectPasswordExeption e) {
+      logger.info("Password incorrect");
+      return ResponseEntity.status(401).body("Password incorrect");
     }
+
     logger.info("Username or password incorrect");
-    return ResponseEntity.status(401).body("Username or password incorrect");
+
+    return ResponseEntity.status(401).body("invalid username or password");
   }
 
   @GetMapping("/user/{id}")
@@ -71,3 +84,4 @@ public class UserController {
     return ResponseEntity.ok("User deleted");
   }
 }
+
