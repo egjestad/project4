@@ -31,40 +31,45 @@ public class UserController {
 
   //todo: move to service
   @PostMapping("/register")
-  public UserResponse registerUser(UserRequest userRequest) {
+  public ResponseEntity<?> registerUser(@RequestBody UserRequest userRequest) {
     logger.info("received register request");
+    /*
     Optional<User> existingUser = userService.findUserByUsername(userRequest.getUsername());
     if (existingUser.isPresent()) {
       logger.info("User already exists");
-    }
-    userService.registerUser(userRequest.getUsername(), userRequest.getPassword());
-    logger.info("User registered, logging in");
-    Optional<User> user = userService.findUserByUsername(userRequest.getUsername());
-    return new UserResponse(user.get().getId(), user.get().getUsername());
+      return ResponseEntity.badRequest().body("User already exists");
+    } else {
+    */
+
+      userService.registerUser(userRequest.getUsername(), userRequest.getPassword());
+      logger.info("User registered, logging in");
+      LoginResponse loginResponse = userService.loginUser(userRequest.getUsername(), userRequest.getPassword());
+      return ResponseEntity.ok().body(new LoginResponse(loginResponse.getToken()));
+    //}
+
+
   }
 
   @PostMapping("/login")
   public ResponseEntity<?> loginUser(@RequestBody UserRequest userRequest) {
     logger.info("Received login request");
-    String token = null;
     try {
-      token = userService.authenticateUser(userRequest.getUsername(), userRequest.getPassword());
+      LoginResponse loginResponse = userService.loginUser(userRequest.getUsername(), userRequest.getPassword());
+      String token = loginResponse.getToken();
       if (token != null) {
         logger.info("User authenticated, returning token: " + token);
         return ResponseEntity.ok().body(new LoginResponse(token));
       } else {
-        logger.info("Token is null");
+        logger.warning("Token is null");
       }
     } catch (UserNotFoundExeption e) {
-      logger.info("User not found");
+      return ResponseEntity.status(401).body("User not found");
       //registerUser(userRequest);
     } catch (InncorectPasswordExeption e) {
       logger.info("Password incorrect");
       return ResponseEntity.status(401).body("Password incorrect");
     }
-
     logger.info("Username or password incorrect");
-
     return ResponseEntity.status(401).body("invalid username or password");
   }
 

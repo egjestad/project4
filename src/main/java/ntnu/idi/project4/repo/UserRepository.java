@@ -5,6 +5,9 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+
+import java.util.logging.Logger;
+
 /**
  * Repository class for managing User entities in the database.
  */
@@ -13,6 +16,7 @@ public class UserRepository {
 
   private final JdbcTemplate jdbcTemplate;
   private final String TABLE_NAME = "users";
+  private final Logger logger = Logger.getLogger(UserRepository.class.getName());
 
   private final RowMapper<User> userRowMapper = (rs, rowNum) -> {
     User user = new User();
@@ -36,6 +40,7 @@ public class UserRepository {
    * @param user the User to save
    */
   public void save(User user) {
+    logger.info("Saving user to database: " + user);
     String sql = "INSERT INTO " + TABLE_NAME + " (username, password) VALUES (?, ?)";
     jdbcTemplate.update(sql, user.getUsername(), user.getPassword());
   }

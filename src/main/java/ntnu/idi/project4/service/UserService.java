@@ -1,5 +1,6 @@
 package ntnu.idi.project4.service;
 
+import ntnu.idi.project4.dto.LoginResponse;
 import ntnu.idi.project4.exeptions.InncorectPasswordExeption;
 import ntnu.idi.project4.exeptions.UserNotFoundExeption;
 import ntnu.idi.project4.model.User;
@@ -43,7 +44,13 @@ public class UserService {
     }
   }
 
+  public LoginResponse loginUser(String username, String password) {
+    String token = authenticateUser(username, password);
+    return new LoginResponse(token);
+  }
+
   public void registerUser(String username, String password) {
+    logger.info("Registering user: " + username);
     User user = new User();
     user.setUsername(username);
     user.setPassword(password);
