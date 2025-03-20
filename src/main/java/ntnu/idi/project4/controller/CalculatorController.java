@@ -1,5 +1,7 @@
 package ntnu.idi.project4.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import ntnu.idi.project4.dto.CalculationRequest;
 import ntnu.idi.project4.dto.CalculationResponse;
 import ntnu.idi.project4.model.Calculation;
@@ -40,9 +42,13 @@ public class CalculatorController {
    * @return the calculation response
    */
   @PostMapping("/calc")
-  public ResponseEntity<CalculationResponse> calc(@RequestBody CalculationRequest request, @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+  public ResponseEntity<CalculationResponse> calc(
+          @RequestBody CalculationRequest request,
+          @RequestHeader(HttpHeaders.AUTHORIZATION) String token
+  ) {
     logger.info("Received calculation request: " + request.getExpression());
     logger.info("Recieved token: " + token);
+
 
     int userId = tokenUtil.extractUserId(token);
     if (userId == -1) {

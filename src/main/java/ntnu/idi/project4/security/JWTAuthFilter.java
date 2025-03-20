@@ -123,13 +123,17 @@ public class JWTAuthFilter extends OncePerRequestFilter {
     }
 
     private String getRefreshTokenFromCookies(HttpServletRequest request) {
+        logger.info("Getting refresh token from cookies");
         if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
+            logger.info("Cookies found");
+            for (var cookie : request.getCookies()) {
                 if (cookie.getName().equals("refreshToken")) {
+                    logger.info("Refresh token found in cookies");
                     return cookie.getValue();
                 }
             }
         }
+        logger.info("No refresh token found in cookies");
         return null;
     }
 }

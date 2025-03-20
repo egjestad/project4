@@ -38,7 +38,7 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfigurat
           .cors(cors -> cors.configurationSource(corsConfigurationSource))
           .authorizeHttpRequests(auth -> auth
                   .requestMatchers("/register", "/login", "/refresh").permitAll()
-                  .requestMatchers("/recent").authenticated() // Ensure this is correct
+                  .requestMatchers("/recent", "/calc").authenticated() // Ensure this is correct
                   .anyRequest().authenticated())
           .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
           .addFilterBefore(new JWTAuthFilter(tokenUtil), UsernamePasswordAuthenticationFilter.class);

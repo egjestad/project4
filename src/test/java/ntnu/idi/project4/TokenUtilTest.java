@@ -1,6 +1,5 @@
 package ntnu.idi.project4;
 
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import ntnu.idi.project4.security.TokenUtil;
@@ -11,9 +10,9 @@ class TokenUtilTest {
   private final TokenUtil tokenUtil = new TokenUtil();
 
   @Test
-  @DisplayName("Test generateToken")
+  @DisplayName("Test generateAccessToken")
   void generateTokenAndVerify() {
-    String token = tokenUtil.generateToken(1);
+    String token = tokenUtil.generateAccessToken(1);
     System.out.println(token);
     assertNotNull(token);
 

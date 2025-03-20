@@ -40,6 +40,7 @@ public class UserService {
       String refreshToken = tokenUtil.generateRefreshToken(tokenUtil.extractUserId(loginResponse.getAccessToken()));
       response.addCookie(getRefreshCookie(refreshToken));
       logger.info("Login successful: " + loginResponse.getAccessToken());
+      logger.info("Refresh token: " + refreshToken);
       return ResponseEntity.ok().body(loginResponse);
     } catch (UserNotFoundExeption e) {
       return ResponseEntity.status(401).body("User not found");
@@ -53,7 +54,7 @@ public class UserService {
       Cookie cookie = new Cookie("refreshToken", refreshToken);
       cookie.setHttpOnly(true);
       cookie.setSecure(false);
-      cookie.setPath("/refresh");
+      cookie.setPath("/");
       cookie.setMaxAge(60 * 60 * 24); //1 day
       return cookie;
     } catch (Exception e) {

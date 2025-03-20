@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 @Component
 public class TokenUtil {
   private final String SECRET_KEY = "yourSecretKeyHereYourSecretKeyHere";
-  private final Duration ACCESS_TOKEN_VALIDITY = Duration.ofMinutes(5);
+  private final Duration ACCESS_TOKEN_VALIDITY = Duration.ofSeconds(15);
   private final Duration REFRESH_TOKEN_VALIDITY = Duration.ofDays(1);
   private final Logger logger = Logger.getLogger(TokenUtil.class.getName());
 
