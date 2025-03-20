@@ -1,6 +1,7 @@
 package ntnu.idi.project4.controller;
 
-
+import java.util.Optional;
+import java.util.logging.Logger;
 import ntnu.idi.project4.dto.LoginResponse;
 import ntnu.idi.project4.dto.UserRequest;
 import ntnu.idi.project4.dto.UserResponse;
@@ -10,11 +11,16 @@ import ntnu.idi.project4.model.User;
 import ntnu.idi.project4.security.TokenUtil;
 import ntnu.idi.project4.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
-import java.util.Optional;
-import java.util.logging.Logger;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+
 
 
 @RestController
@@ -33,45 +39,32 @@ public class UserController {
   @PostMapping("/register")
   public ResponseEntity<?> registerUser(@RequestBody UserRequest userRequest) {
     logger.info("received register request");
-    /*
-    Optional<User> existingUser = userService.findUserByUsername(userRequest.getUsername());
-    if (existingUser.isPresent()) {
-      logger.info("User already exists");
+
+    if (userService.userExists(userRequest.getUsername())) {
+      logger.warning("User already exists");
       return ResponseEntity.badRequest().body("User already exists");
     } else {
-    */
-
       userService.registerUser(userRequest.getUsername(), userRequest.getPassword());
       logger.info("User registered, logging in");
-      LoginResponse loginResponse = userService.loginUser(userRequest.getUsername(), userRequest.getPassword());
-      return ResponseEntity.ok().body(new LoginResponse(loginResponse.getToken()));
-    //}
-
-
+      return userService.getLoginResponse(userRequest.getUsername(), userRequest.getPassword());
+    }
   }
 
   @PostMapping("/login")
   public ResponseEntity<?> loginUser(@RequestBody UserRequest userRequest) {
-    logger.info("Received login request");
-    try {
-      LoginResponse loginResponse = userService.loginUser(userRequest.getUsername(), userRequest.getPassword());
-      String token = loginResponse.getToken();
-      if (token != null) {
-        logger.info("User authenticated, returning token: " + token);
-        return ResponseEntity.ok().body(new LoginResponse(token));
-      } else {
-        logger.warning("Token is null");
-      }
-    } catch (UserNotFoundExeption e) {
-      return ResponseEntity.status(401).body("User not found");
-      //registerUser(userRequest);
-    } catch (InncorectPasswordExeption e) {
-      logger.info("Password incorrect");
-      return ResponseEntity.status(401).body("Password incorrect");
-    }
-    logger.info("Username or password incorrect");
-    return ResponseEntity.status(401).body("invalid username or password");
+    return userService.getLoginResponse(userRequest.getUsername(), userRequest.getPassword());
   }
+
+  @PostMapping("/refresh")
+  public ResponseEntity<?> refreshToken(@RequestBody String refreshToken) {
+    int userId = tokenUtil.extractUserId(refreshToken);
+    if (userId == -1) {
+      return ResponseEntity.status(403).body("Invalid token");
+    }
+    String newAccessToken = tokenUtil.generateAccessToken(userId);
+    return ResponseEntity.ok(newAccessToken);
+  }
+
 
   @GetMapping("/user/{id}")
   public ResponseEntity<UserResponse> getUserById(@PathVariable int id) {

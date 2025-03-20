@@ -14,10 +14,11 @@ import java.util.logging.Logger;
 @Component
 public class TokenUtil {
   private final String SECRET_KEY = "yourSecretKeyHereYourSecretKeyHere";
-  private final Duration TOKEN_VALIDITY = Duration.ofMinutes(5);
+  private final Duration ACCESS_TOKEN_VALIDITY = Duration.ofMinutes(5);
+  private final Duration REFRESH_TOKEN_VALIDITY = Duration.ofDays(1);
   private final Logger logger = Logger.getLogger(TokenUtil.class.getName());
 
-  public String generateToken(int userId) {
+  public String generateAccessToken(int userId) {
     final Instant now = Instant.now();
     final Algorithm hmac512 = Algorithm.HMAC512(SECRET_KEY);
     final JWTVerifier verifier = JWT.require(hmac512).build();
@@ -25,7 +26,7 @@ public class TokenUtil {
             .withSubject(Integer.toString(userId))
             .withIssuer("project4")
             .withIssuedAt(now)
-            .withExpiresAt(now.plusMillis(TOKEN_VALIDITY.toMillis()))
+            .withExpiresAt(now.plusMillis(ACCESS_TOKEN_VALIDITY.toMillis()))
             .sign(hmac512);
   }
 
@@ -58,5 +59,17 @@ public class TokenUtil {
     } catch (NumberFormatException e) {
       throw new NumberFormatException("Invalid userId in token");
     }
+  }
+
+  public String generateRefreshToken(int userId) {
+    final Instant now = Instant.now();
+    final Algorithm hmac512 = Algorithm.HMAC512(SECRET_KEY);
+    final JWTVerifier verifier = JWT.require(hmac512).build();
+    return JWT.create()
+            .withSubject(Integer.toString(userId))
+            .withIssuer("project4")
+            .withIssuedAt(now)
+            .withExpiresAt(now.plusMillis(ACCESS_TOKEN_VALIDITY.toMillis()))
+            .sign(hmac512);
   }
 }

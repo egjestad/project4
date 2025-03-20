@@ -7,6 +7,7 @@ import ntnu.idi.project4.model.User;
 import ntnu.idi.project4.repo.UserRepository;
 import ntnu.idi.project4.security.TokenUtil;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
@@ -28,26 +29,42 @@ public class UserService {
     this.passwordEncoder = new BCryptPasswordEncoder();
   }
 
-  public String authenticateUser(String username, String password) {
-    logger.info("Authenticating user: " + username);
-    User user = userRepository.findByUsername(username);
-    logger.info("Found user: " + user);
-
-    if (user == null) {
-      logger.info("User not found");
-      throw new UserNotFoundExeption("User not found");
-    } else if (passwordEncoder.matches(password, user.getPassword())) {
-      logger.info("User authenticated: " + user);
-      return tokenUtil.generateToken(user.getId());
-    } else {
-      logger.info("Password incorrect");
-      throw new InncorectPasswordExeption("Password incorrect");
+  public ResponseEntity<?> getLoginResponse(String username, String password) {
+    try {
+      LoginResponse loginResponse = loginUser(username, password);
+      if (loginResponse.getAccessToken() == null) {
+        return ResponseEntity.status(401).body("Token not Generated");
+      }
+      return ResponseEntity.ok().body(loginResponse);
+    } catch (UserNotFoundExeption e) {
+      return ResponseEntity.status(401).body("User not found");
+    } catch (InncorectPasswordExeption e) {
+      return ResponseEntity.status(401).body("Password incorrect");
     }
   }
 
+  public boolean authenticateUser(String username, String password, User user) {
+    return username.equals(user.getUsername()) && passwordEncoder.matches(password, user.getPassword());
+  }
+
   public LoginResponse loginUser(String username, String password) {
-    String token = authenticateUser(username, password);
-    return new LoginResponse(token);
+    if (!userExists(username)) {
+      throw new UserNotFoundExeption("User not found");
+    }
+
+    User user = userRepository.findByUsername(username);
+
+    if (!authenticateUser(username, password, user)) {
+      throw new InncorectPasswordExeption("Incorrect password");
+    }
+
+    return generateTokens(user.getId());
+  }
+
+  public LoginResponse generateTokens(int userId) {
+    String accessToken = tokenUtil.generateAccessToken(userId);
+    String refreshToken = tokenUtil.generateRefreshToken(userId);
+    return new LoginResponse(accessToken, refreshToken);
   }
 
   public void registerUser(String username, String password) {
@@ -58,6 +75,11 @@ public class UserService {
     setHashedPassword(password, user);
 
     userRepository.save(user);
+  }
+
+  public boolean userExists(String username) {
+    Optional<User> existingUser = findUserByUsername(username);
+    return existingUser.isPresent();
   }
 
   public void setHashedPassword(String password, User user) {
@@ -75,14 +97,6 @@ public class UserService {
 
   public void deleteUserById(int id) {
     userRepository.deleteById(id);
-  }
-
-  public void updateUserPassword(int id, String password) {
-    userRepository.updatePassword(id, password);
-  }
-
-  public void updateUserUsername(int id, String username) {
-    userRepository.updateUsername(id, username);
   }
 
 }
