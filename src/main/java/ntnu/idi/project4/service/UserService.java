@@ -7,6 +7,7 @@ import ntnu.idi.project4.model.User;
 import ntnu.idi.project4.repo.UserRepository;
 import ntnu.idi.project4.security.TokenUtil;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 
@@ -17,30 +18,30 @@ public class UserService {
 
   private final UserRepository userRepository;
   private final TokenUtil tokenUtil;
+  private final BCryptPasswordEncoder passwordEncoder;
 
   private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
   public UserService(UserRepository userRepository, TokenUtil tokenUtil) {
     this.userRepository = userRepository;
     this.tokenUtil = tokenUtil;
+    this.passwordEncoder = new BCryptPasswordEncoder();
   }
 
   public String authenticateUser(String username, String password) {
     logger.info("Authenticating user: " + username);
     User user = userRepository.findByUsername(username);
     logger.info("Found user: " + user);
-    if (user != null) {
-      logger.info("User password: " + user.getPassword());
-      if (user.getPassword().equals(password)) {
-        logger.info("User authenticated: " + user);
-        return tokenUtil.generateToken(user.getId());
-      } else {
-        logger.info("Password incorrect");
-        throw new InncorectPasswordExeption("Password incorrect");
-      }
-    } else {
+
+    if (user == null) {
       logger.info("User not found");
       throw new UserNotFoundExeption("User not found");
+    } else if (passwordEncoder.matches(password, user.getPassword())) {
+      logger.info("User authenticated: " + user);
+      return tokenUtil.generateToken(user.getId());
+    } else {
+      logger.info("Password incorrect");
+      throw new InncorectPasswordExeption("Password incorrect");
     }
   }
 
@@ -52,9 +53,16 @@ public class UserService {
   public void registerUser(String username, String password) {
     logger.info("Registering user: " + username);
     User user = new User();
+
     user.setUsername(username);
-    user.setPassword(password);
+    setHashedPassword(password, user);
+
     userRepository.save(user);
+  }
+
+  public void setHashedPassword(String password, User user) {
+    String hashedPassword = passwordEncoder.encode(password);
+    user.setPassword(hashedPassword);
   }
 
   public Optional<User> findUserByUsername(String username) {
