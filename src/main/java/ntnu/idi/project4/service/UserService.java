@@ -1,5 +1,7 @@
 package ntnu.idi.project4.service;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import ntnu.idi.project4.dto.LoginResponse;
 import ntnu.idi.project4.exeptions.InncorectPasswordExeption;
 import ntnu.idi.project4.exeptions.UserNotFoundExeption;
@@ -29,17 +31,34 @@ public class UserService {
     this.passwordEncoder = new BCryptPasswordEncoder();
   }
 
-  public ResponseEntity<?> getLoginResponse(String username, String password) {
+  public ResponseEntity<?> getLoginResponse(String username, String password, HttpServletResponse response) {
     try {
       LoginResponse loginResponse = loginUser(username, password);
       if (loginResponse.getAccessToken() == null) {
         return ResponseEntity.status(401).body("Token not Generated");
       }
+      String refreshToken = tokenUtil.generateRefreshToken(tokenUtil.extractUserId(loginResponse.getAccessToken()));
+      response.addCookie(getRefreshCookie(refreshToken));
+      logger.info("Login successful: " + loginResponse.getAccessToken());
       return ResponseEntity.ok().body(loginResponse);
     } catch (UserNotFoundExeption e) {
       return ResponseEntity.status(401).body("User not found");
     } catch (InncorectPasswordExeption e) {
       return ResponseEntity.status(401).body("Password incorrect");
+    }
+  }
+
+  public Cookie getRefreshCookie(String refreshToken) {
+    try {
+      Cookie cookie = new Cookie("refreshToken", refreshToken);
+      cookie.setHttpOnly(true);
+      cookie.setSecure(false);
+      cookie.setPath("/refresh");
+      cookie.setMaxAge(60 * 60 * 24); //1 day
+      return cookie;
+    } catch (Exception e) {
+      logger.error("Error creating cookie");
+      return null;
     }
   }
 
@@ -63,12 +82,10 @@ public class UserService {
 
   public LoginResponse generateTokens(int userId) {
     String accessToken = tokenUtil.generateAccessToken(userId);
-    String refreshToken = tokenUtil.generateRefreshToken(userId);
-    return new LoginResponse(accessToken, refreshToken);
+    return new LoginResponse(accessToken);
   }
 
   public void registerUser(String username, String password) {
-    logger.info("Registering user: " + username);
     User user = new User();
 
     user.setUsername(username);

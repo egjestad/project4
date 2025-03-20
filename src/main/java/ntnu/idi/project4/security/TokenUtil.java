@@ -21,7 +21,7 @@ public class TokenUtil {
   public String generateAccessToken(int userId) {
     final Instant now = Instant.now();
     final Algorithm hmac512 = Algorithm.HMAC512(SECRET_KEY);
-    final JWTVerifier verifier = JWT.require(hmac512).build();
+
     return JWT.create()
             .withSubject(Integer.toString(userId))
             .withIssuer("project4")
@@ -48,13 +48,11 @@ public class TokenUtil {
   public int extractUserId(String token) {
     try {
       token = token.replace("Bearer ", "");
-      logger.info("Extracting userId from token: " + token);
       String userIdStr = verifyToken(token);
-      if (userIdStr != null) {
-        logger.info("Extracted userId: " + userIdStr);
-        return Integer.parseInt(userIdStr);
-      } else {
+      if (userIdStr == null || userIdStr.trim().isEmpty()) {
         return -1;
+      } else{
+        return Integer.parseInt(userIdStr);
       }
     } catch (NumberFormatException e) {
       throw new NumberFormatException("Invalid userId in token");
@@ -69,7 +67,22 @@ public class TokenUtil {
             .withSubject(Integer.toString(userId))
             .withIssuer("project4")
             .withIssuedAt(now)
-            .withExpiresAt(now.plusMillis(ACCESS_TOKEN_VALIDITY.toMillis()))
+            .withExpiresAt(now.plusMillis(REFRESH_TOKEN_VALIDITY.toMillis()))
             .sign(hmac512);
+  }
+
+  public String refreshAccessToken(String refreshToken) {
+    try {
+      Algorithm hmac512 = Algorithm.HMAC512(SECRET_KEY);
+      JWTVerifier verifier = JWT.require(hmac512).build();
+      String userIdStr = verifier.verify(refreshToken).getSubject();
+
+      if (userIdStr != null) {
+        return generateAccessToken(Integer.parseInt(userIdStr));
+      }
+    } catch (JWTVerificationException e) {
+      logger.warning("Token verification failed: " + e.getMessage());
+    }
+    return null;
   }
 }

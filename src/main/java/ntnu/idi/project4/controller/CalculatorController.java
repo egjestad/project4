@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * REST controller for the calculator service.
  */
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RestController
 public class CalculatorController {
 
@@ -46,7 +46,7 @@ public class CalculatorController {
 
     int userId = tokenUtil.extractUserId(token);
     if (userId == -1) {
-      logger.info("Unauthorized request");
+      logger.info("Unauthorized request - invalid token");
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
     CalculationResponse response = calculatorService.calculateAndSave(userId, request.getExpression());
@@ -62,7 +62,7 @@ public class CalculatorController {
    */
   @GetMapping("/recent")
   public ResponseEntity<List<Calculation>> getRecentCalculations(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
-
+    logger.info("Received request for recent calculations");
 
     int userId = tokenUtil.extractUserId(token);
     if (userId == -1) {
